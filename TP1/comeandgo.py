@@ -1,14 +1,18 @@
 from collections import defaultdict
 
-def build_testcases(testcase:str):       
+def build_testcases(v, testcase:str):
+    weights = build_matrix(v, 1) #equal weights
     graph = build_graph(testcase)
     #print(graph)
-    source = 1
-    vertices = BFS(graph, source)
-    ok = check_connections(vertices)
+    
+
     #print(vertices)
     print(ok)
 
+def build_matrix(n, value = 0):
+    line = n*[value]
+    matrix = n*[line]
+    return matrix
 
 def build_graph(testcase):
     for street in testcase:   
@@ -43,46 +47,10 @@ def build_graph(testcase):
             continue
     return dict(graph)
 
-def BFS(graph:dict, s):
-    '''Breadth-First Search
-    Parameters
-    --------
-    graph: dict
-        Graph with Vertices V
-    s: int or str
-        source s'''
-    vertices = {}
-    for u in graph.keys():
-        vertices[u] = {}
-        vertices[u]['color'] = 'white'
-        vertices[u]['d'] = len(graph.keys())**10
-        vertices[u]['pi'] = None
-    vertices[s]['color'] = 'gray'
-    vertices[s]['d'] = 0
-    vertices[s]['pi'] = None
-    Q = []
-    Q.append(s) #enqueue s
-    while len(Q) != 0:
-        u = Q.pop(0) #dequeue Q
-        for v in graph[u]:
-            if vertices[v]['color'] == 'white':
-                vertices[v]['color'] = 'gray'
-                vertices[v]['d'] = vertices[u]['d'] + 1
-                vertices[v]['pi'] = u
-                Q.append(v) #enqueue(Q, v)
-        vertices[u]['color'] = 'black'
-        if len(graph[u]) == 0:
-            vertices[u]['color'] = 'gray'
-    return vertices
-    
-def check_connections(vertices):
-    for key in vertices:
-        if vertices[key]['color'] == 'white':
-            return 0
-        elif vertices[key]['color'] == 'gray':
-            return 0
-    return 1
 
+    
+def floyd_warshall(W):
+    pass
 
 testcase = []
 while True:
@@ -90,9 +58,11 @@ while True:
     line = line.strip().split(' ')
     line = list(map(int, line)) 
     
-    if len(line) == 2 and len(testcase) > 1:        
-        build_testcases(testcase)
-        testcase = []
+    if len(line) == 2:
+        n_vertices = line[0]
+        if len(testcase) > 1:        
+            build_testcases(testcase)
+            testcase = []
     
     if line == [0, 0]: break
     testcase.append(line)  
