@@ -1,94 +1,91 @@
 #include <iostream>
 #include <vector>
-#include <unordered_map>
-#include <unordered_set>
-#include <queue>
-#include <string>
-#include <sstream>
+#include <map>
+#include <algorithm>
 #include <iterator>
-#include <cmath>
 
 using namespace std;
 
-unordered_map<int, unordered_set<int>> build_graph(vector<vector<int>>& testcases) {
-    unordered_map<int, unordered_set<int>> graph;
-    for (auto& street : testcases) {
-        if (street.size() == 3) {
-            int v = street[0];
-            int w = street[1];
-            int p = street[2];
-            if (p == 1) {
-                graph[v].insert(w);
-            } else if (p == 2) {
-                graph[v].insert(w);
-                graph[w].insert(v);
-            }
+map<int, vector<int>> add_edge(map<int, vector<int>> graph, int from_x, int to_y, int type) {
+    int i = from_x - 1;
+    int j = to_y - 1;
+
+    if (type == 1) {
+        graph[i].push_back(j);
+    } else if (type == 2) {
+        if (find(graph[i].begin(), graph[i].end(), j) == graph[i].end()) {
+            graph[i].push_back(j);
+        }
+
+        if (find(graph[j].begin(), graph[j].end(), i) == graph[j].end()) {
+            graph[j].push_back(i);
         }
     }
+
+    if (graph.find(j) == graph.end()) {
+        graph[j] = vector<int>();
+    }
+
     return graph;
 }
-
-unordered_map<int, unordered_map<string, int>> BFS(unordered_map<int, unordered_set<int>>& graph, int s) {
-    unordered_map<int, unordered_map<string, int>> vertices;
-    for (auto& u : graph) {
-        vertices[u.first]["color"] = 0;
-        vertices[u.first]["d"] = pow(graph.size(), 10);
-        vertices[u.first]["pi"] = -1;
-    }
-    vertices[s]["color"] = 1;
-    vertices[s]["d"] = 0;
-    vertices[s]["pi"] = -1;
-    queue<int> Q;
-    Q.push(s);
-    while (!Q.empty()) {
-        int u = Q.front(); Q.pop();
-        for (auto& v : graph[u]) {
-            if (vertices[v]["color"] == 0) {
-                vertices[v]["color"] = 1;
-                vertices[v]["d"] = vertices[u]["d"] + 1;
-                vertices[v]["pi"] = u;
-                Q.push(v);
+bool DFS_visited(map<int, vector<int>> graph, int u, map<int, bool> &visited) {
+    visited[u] = true;
+    for (int v : graph[u]) {
+        if (!visited[v]) {
+            if (!DFS_visited(graph, v, visited)) {
+                return false;
             }
         }
-        vertices[u]["color"] = 2;
     }
-    return vertices;
+    return true;
 }
 
-int check_connections(unordered_map<int, unordered_map<string, int>>& vertices) {
-    for (auto& kv : vertices) {
-        if (kv.second["color"] == 0) return 0;
-    }
-    return 1;
-}
-
-void build_testcases(vector<vector<vector<int>>>& testcases) {
-    for (auto& testcase : testcases) {
-        if (testcase.empty()) continue;
-        auto graph = build_graph(testcase);
-        if (!graph.empty()) {
-            auto vertices = BFS(graph, graph.begin()->first);
-            int ok = check_connections(vertices);
-            cout << ok << endl;
+bool DFS(map<int, vector<int>> graph) {
+    for (auto u : graph) {
+        map<int, bool> visited;
+        for (auto v : graph) {
+            visited[v.first] = false;
+        }
+        if (!visited[u.first]) {
+            if (!DFS_visited(graph, u.first, visited)) {
+                return false;
+            }
+        }
+        for (auto const& x : visited) {
+            if(x.second == false) 
+                return false;
         }
     }
+    return true;
 }
 
 int main() {
-    vector<vector<vector<int>>> testcases;
-    string line;
-    vector<vector<int>> testcase;
-    while (getline(cin, line)) {
+    int n_edges, from_x, to_y, type;
+    map<int, vector<int>> graph;
+    while (true) {
+        string line;
+        getline(cin, line);
+        if (line == "0 0") {
+            break;
+        }
+
         istringstream iss(line);
-        vector<int> nums((istream_iterator<int>(iss)), istream_iterator<int>());
-        if (nums.size() == 2 && nums[0] == 0 && nums[1] == 0) {
-            testcases.push_back(testcase);
-            testcase.clear();
+        vector<int> nums(istream_iterator<int>{iss}, istream_iterator<int>());
+        if (nums.size() == 2) {
+            n_edges = nums[1];
+            graph.clear();
+            for (int i = 0; i < nums[0]; i++) {
+                graph[i] = vector<int>();
+            }
         } else {
-            testcase.push_back(nums);
+            from_x = nums[0];
+            to_y = nums[1];
+            type = nums[2];
+            graph = add_edge(graph, from_x, to_y, type);
+            if (graph.size() == n_edges) {
+                cout << DFS(graph) << endl;
+            }
         }
     }
-    if (!testcase.empty()) testcases.push_back(testcase);
-    build_testcases(testcases);
     return 0;
 }

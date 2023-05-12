@@ -8,10 +8,24 @@ def build_matrix(n:int, value = 0):
     
     value: any
      Defaults to 0. Value to fill matrix.'''
-    line = n*[value]
-    matrix = n*[line]
+    matrix = [[value for _ in range(n)] for _ in range(n)]
     return matrix
 
+def add_edge(matrix, from_x, to_y, type):
+    '''
+    Add edge'''
+    i = from_x - 1
+    j = to_y - 1 
+    #add self reaching edge
+    matrix[i][j] = 1
+    if type == 1:
+        matrix[i][j] = 1
+    elif type == 2:
+        matrix[i][j] = 1
+        matrix[j][i] = 1
+    else:
+        pass
+    return matrix
 def floyd_warshall(W):
     ''''Implementation of the Floyd-Warshall algorithm.
     Parameters
@@ -24,12 +38,11 @@ def floyd_warshall(W):
     D_k_1: list(list)
     '''
     n = len(W)
-    D_k_1 = [row[:] for row in W]
+    D_k = [row[:] for row in W]
     for k in range(0, n):
-        D_k = build_matrix(n)
         for i in range(0, n):
             for j in range(0, n):
-                D_k[i][j] = min(D_k_1[i][j], (D_k_1[i][k]+D_k_1[k][j]))
-        D_k_1 = D_k
-    return D_k_1
+                D_k[i][j] = min(D_k[i][j], (D_k[i][k]+D_k[k][j]))
+
+    return D_k
 
