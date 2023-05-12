@@ -3,6 +3,7 @@
 #include <map>
 #include <algorithm>
 #include <iterator>
+#include <sstream>
 
 using namespace std;
 
@@ -22,10 +23,6 @@ map<int, vector<int>> add_edge(map<int, vector<int>> graph, int from_x, int to_y
         }
     }
 
-    if (graph.find(j) == graph.end()) {
-        graph[j] = vector<int>();
-    }
-
     return graph;
 }
 bool DFS_visited(map<int, vector<int>> graph, int u, map<int, bool> &visited) {
@@ -40,7 +37,7 @@ bool DFS_visited(map<int, vector<int>> graph, int u, map<int, bool> &visited) {
     return true;
 }
 
-bool DFS(map<int, vector<int>> graph) {
+int DFS(map<int, vector<int>> graph) {
     for (auto u : graph) {
         map<int, bool> visited;
         for (auto v : graph) {
@@ -53,11 +50,12 @@ bool DFS(map<int, vector<int>> graph) {
         }
         for (auto const& x : visited) {
             if(x.second == false) 
-                return false;
+                return 0;
         }
     }
-    return true;
+    return 1;
 }
+
 
 int main() {
     int n_edges, from_x, to_y, type;
@@ -70,7 +68,10 @@ int main() {
         }
 
         istringstream iss(line);
-        vector<int> nums(istream_iterator<int>{iss}, istream_iterator<int>());
+        vector<int> nums((istream_iterator<int>(iss)), istream_iterator<int>());
+        if (nums.empty()) {
+            continue;  // If nums is empty, skip the rest of the loop
+        }
         if (nums.size() == 2) {
             n_edges = nums[1];
             graph.clear();
