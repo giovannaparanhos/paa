@@ -1,70 +1,43 @@
-from collections import defaultdict
 
+def DFS_MOD(n_cities, c_libs, c_roads, graph):
+    roads_built = []
+    cities = set()
+    for city in range(1, n_cities+1):
+        if city not in cities:
+            stack = [city]
+            while stack:
+                current_city = stack.pop()
+                cities.add(current_city)
+                for neighbor in graph[current_city]:
+                    if neighbor not in cities:
+                        stack.append(neighbor)
+            roads_built.append(cities)
+    total_cost=0
+    for cities in roads_built:
+        total_cost+= c_libs + (len(cities)-1)*c_roads
+    return total_cost
 
-def build_testcases(testcase:str):       
-    graph = build_graph(testcase)
-    #print(graph)
-    source = 1
-   
-    #print(vertices)
-    print(ok)
-
-
-def build_graph(testcases):
-    for street in testcases:   
-        if len(street) == 2:
-            testcase = street
-            n = int(testcase[0])
-            m = int(testcase[1])    
-            graph = defaultdict(list)
-        if n == 0 and m ==0:
-            break
-        
-        if len(street) == 3:
-            # vertex v
-            v = street[0]
-            # vertex w
-            w = street[1]
-            #adjacency type
-            p = street[2]
-            # pair vw is one-way v->w if 1, 
-            # two-way v<=>w if 2
-            if p == 1:
-                graph[v].append(w)
-
-            elif p ==2:
-                if w not in graph[v]:
-                    graph[v].append(w)
-
-                if v not in graph[w]: 
-                    graph[w].append(v)
-            if w not in graph.keys():
-                graph[w] = []
-            continue
-    return dict(graph)
-
-
-
-if __name__ == '__main__':
-    maps = 0
-    while True:
-        line = input()
-        line = line.strip().split(' ')
-        line = list(map(int, line)) 
-        if len(line) == 1:
-            p_maps = line[0] 
-        if len(line) == 4:
-            curr_map = dict()
-            n_cities = line[0]
-            m_libraries = line[1]
-            b_cost_lib = line[2]
-            e_cost_road = line[3]
-            maps += 1
-        while len(line) == 2:
-            city_x = line[0]
-            city_y = line[1]
-            
-        if maps > p_maps:
-            exit
+def run_president(n_cities, n_roads, c_libs, c_roads):
     
-    
+    graph = {city: [] for city in range(1, n_cities+1)}
+    j=0
+    while j < n_roads:
+        j+=1
+        s, t = map(int, input().split())
+        graph[s].append(t)
+        graph[t].append(s)
+
+        if j==n_roads:
+            if c_libs > 0 and c_libs <= c_roads:
+                total_cost=c_libs*n_cities
+                return total_cost
+            total_cost = DFS_MOD(n_cities, c_libs, c_roads, graph)
+            return total_cost
+
+
+T = int(input())
+i = 0
+while i < T:
+    n_cities, n_roads, c_libs, c_roads  = map(int, input().split())
+    print(run_president(n_cities, n_roads, c_libs, c_roads))
+    i += 1
