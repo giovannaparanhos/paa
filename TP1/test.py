@@ -1,31 +1,35 @@
-from collections import deque
+def DFS_MOD(n_cities, c_libs, c_roads, graph):
+    #n_cities = min(n_cities, 100000)
+    lib_counter = 0
+    visited = set()
+    for city in range(1, n_cities + 1):
+        if city not in visited:
+            lib_counter += 1
+            stack = [city]
+            while stack:
+                current_city = stack.pop()
+                if current_city not in visited:
+                    visited.add(current_city)
+                    stack.extend([neighbor for neighbor in graph[current_city] if neighbor not in visited])
+     
+    return lib_counter * c_libs + (len(visited)-1) * c_roads
 
-def reverse_number(n):
-    return int(str(n)[::-1])
+def run_president(n_cities, n_roads, c_libs, c_roads):
+    if n_roads == 0:
+        return c_libs * n_cities
 
-def bfs(a, b):
-    visited = [False] * 10000
-    dist = [0] * 10000
-    queue = deque([a])
-    visited[a] = True
-    dist[a] = 0
-    while queue:
-        current = queue.popleft()
-        if current == b:
-            return dist[current]
-        # Adding 1
-        if current + 1 < 10000 and not visited[current + 1]:
-            queue.append(current + 1)
-            visited[current + 1] = True
-            dist[current + 1] = dist[current] + 1
-        # Reversing
-        reversed_current = reverse_number(current)
-        if reversed_current < 10000 and not visited[reversed_current]:
-            queue.append(reversed_current)
-            visited[reversed_current] = True
-            dist[reversed_current] = dist[current] + 1
+    graph = {city: set() for city in range(1, n_cities + 1)}
+    for _ in range(n_roads):
+        s, t = map(int, input().split())
+        graph[s].add(t)
+        graph[t].add(s)
+        
+    if c_libs <= c_roads:
+        return c_libs * n_cities
+
+    return DFS_MOD(n_cities, c_libs, c_roads, graph)
 
 T = int(input())
-for _ in range(T):
-    A, B = map(int, input().split())
-    print(bfs(A, B))
+for _ in range(min(T, 10)):
+    n_cities, n_roads, c_libs, c_roads = map(int, input().split())
+    print(run_president(n_cities, n_roads, c_libs, c_roads))
