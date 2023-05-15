@@ -1,5 +1,5 @@
 def DFS_MOD(n_cities, c_libs, c_roads, graph):
-    #n_cities = min(n_cities, 100000)
+    n_cities = min(n_cities, 100000)
     lib_counter = 0
     visited = set()
     for city in range(1, n_cities + 1):
@@ -21,9 +21,10 @@ def run_president(n_cities, n_roads, c_libs, c_roads):
     graph = {city: set() for city in range(1, n_cities + 1)}
     for _ in range(n_roads):
         s, t = map(int, input().split())
-        graph[s].add(t)
-        graph[t].add(s)
-        
+        if c_libs>c_roads:
+            graph[s].add(t)
+            graph[t].add(s)
+            
     if c_libs <= c_roads:
         return c_libs * n_cities
 

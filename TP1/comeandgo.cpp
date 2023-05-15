@@ -1,89 +1,47 @@
 #include <iostream>
 #include <vector>
-#include <map>
-#include <algorithm>
-#include <iterator>
-#include <sstream>
-
+#include <set>
+#include <algorithm> 
 using namespace std;
 
-map<int, vector<int>> add_edge(map<int, vector<int>> graph, int from_x, int to_y, int type) {
-    int i = from_x - 1;
-    int j = to_y - 1;
-
+void add_edge(int i, int j, int type, vector<set<int>>& graph) {
     if (type == 1) {
-        graph[i].push_back(j);
+        graph[i].insert(j);
     } else if (type == 2) {
-        if (find(graph[i].begin(), graph[i].end(), j) == graph[i].end()) {
-            graph[i].push_back(j);
-        }
-
-        if (find(graph[j].begin(), graph[j].end(), i) == graph[j].end()) {
-            graph[j].push_back(i);
-        }
+        graph[i].insert(j);
+        graph[j].insert(i);
     }
-
-    return graph;
 }
-bool DFS_visited(map<int, vector<int>> graph, int u, map<int, bool> &visited) {
+
+void DFS_visited(int u, vector<bool>& visited, vector<set<int>>& graph) {
     visited[u] = true;
-    for (int v : graph[u]) {
+    for (auto v : graph[u]) {
         if (!visited[v]) {
-            if (!DFS_visited(graph, v, visited)) {
-                return false;
-            }
+            DFS_visited(v, visited, graph);
         }
     }
-    return true;
 }
 
-int DFS(map<int, vector<int>> graph) {
-    for (auto u : graph) {
-        map<int, bool> visited;
-        for (auto v : graph) {
-            visited[v.first] = false;
-        }
-        if (!visited[u.first]) {
-            if (!DFS_visited(graph, u.first, visited)) {
-                return false;
-            }
-        }
-        for (auto const& x : visited) {
-            if(x.second == false) 
-                return 0;
+int DFS(vector<set<int>>& graph) {
+    for (int start = 0; start < graph.size(); ++start) {
+        vector<bool> visited(graph.size(), false);
+        DFS_visited(start, visited, graph);
+        if (std::any_of(visited.begin(), visited.end(), [](bool v){ return !v; })) {
+            return 0;
         }
     }
     return 1;
 }
-
-
 int main() {
-    int n_edges, from_x, to_y, type;
-    map<int, vector<int>> graph;
-    while (true) {
-        string line;
-        getline(cin, line);
-        if (line == "0 0") {
-            break;
-        }
-
-        istringstream iss(line);
-        vector<int> nums((istream_iterator<int>(iss)), istream_iterator<int>());
-        if (nums.empty()) {
-            continue;  // If nums is empty, skip the rest of the loop
-        }
-        if (nums.size() == 2) {
-            n_edges = nums[1];
-            graph.clear();
-            for (int i = 0; i < nums[0]; i++) {
-                graph[i] = vector<int>();
-            }
-        } else {
-            from_x = nums[0];
-            to_y = nums[1];
-            type = nums[2];
-            graph = add_edge(graph, from_x, to_y, type);
-            if (graph.size() == n_edges) {
+    int vertices, edges;
+    while (cin >> vertices >> edges) {
+        if (edges == 0) break;
+        vector<set<int>> graph(vertices+1);
+        for (int i = 0; i < edges; ++i) {
+            int source, target, type;
+            cin >> source >> target >> type;
+            add_edge(source, target, type, graph);
+            if (i+1 == edges) {
                 cout << DFS(graph) << endl;
             }
         }

@@ -1,60 +1,60 @@
-from collections import defaultdict
+import heapq
 
+def add_edge(i, j, weight, graph):
+    '''
+    Add edge to matrix'''
+    
+    graph[i][j] = weight
+    graph[j][i] = weight
+    
+    return graph
 
-def build_testcases(testcase:str):       
-    graph = build_graph(testcase)
-    #print(graph)
-    source = 1
-    vertices = BFS(graph, source)
-    ok = check_connections(vertices)
-    #print(vertices)
-    print(ok)
-
-
-def build_graph(testcases):
-    for street in testcases:   
-        if len(street) == 2:
-            testcase = street
-            n = int(testcase[0])
-            m = int(testcase[1])    
-            graph = defaultdict(list)
-        if n == 0 and m ==0:
-            break
+def dijkstra(graph, source):
+    distances = {node: float('inf') for node in graph}
+    distances[source] = 0
+    queue = [(0, source)]
+    
+    while queue:
+        current_distance, current_node = heapq.heappop(queue)
         
-        if len(street) == 3:
-            # vertex v
-            v = street[0]
-            # vertex w
-            w = street[1]
-            #adjacency type
-            p = street[2]
-            # pair vw is one-way v->w if 1, 
-            # two-way v<=>w if 2
-            if p == 1:
-                graph[v].append(w)
-
-            elif p ==2:
-                if w not in graph[v]:
-                    graph[v].append(w)
-
-                if v not in graph[w]: 
-                    graph[w].append(v)
-            if w not in graph.keys():
-                graph[w] = []
+        if distances[current_node] < current_distance:
             continue
-    return dict(graph)
+            
+        for adjacent, weight in graph[current_node].items():
+            distance = current_distance + weight
+            
+            if distance < distances[adjacent]:
+                distances[adjacent] = distance
+                heapq.heappush(queue, (distance, adjacent))
+    return distances
+                
 
 
-
-testcase = []
+case = 1
 while True:
-    line = input()
-    line = line.strip().split(' ')
-    line = list(map(int, line)) 
-    
-    if len(line) == 2 and len(testcase) > 1:        
-        build_testcases(testcase)
-        testcase = []
-    
-    if line == [0, 0]: break
-    testcase.append(line)  
+    try:
+        vertices, routes = map(int, input().split())
+        graph = {vertex: {} for vertex in range(1, vertices+1)}
+        for i in range(routes):
+            source, target, weight = map(int, input().split()) 
+            add_edge(source, target, weight, graph)
+            
+        friends, seats = map(int, input().split())
+        if friends > seats*routes:
+            print(f"Instancia {case}")
+            print("impossivel\n")
+            case += 1
+            continue
+
+        price = dijkstra(graph,1)
+
+        if price[vertices] == float('inf'):
+                print(f"Instancia {case}")
+                print("impossivel\n")
+        else:
+            print(f"Instancia {case}")
+            print(price[vertices]*friends, "\n")     
+        case += 1
+
+    except EOFError:
+        break
