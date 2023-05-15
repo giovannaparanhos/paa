@@ -1,38 +1,41 @@
 #include <iostream>
 #include <vector>
-#include <set>
-#include <stack>
-#include <algorithm> 
 using namespace std;
-void add_edge(int i, int j, int type, vector<set<int>>& graph) {
-    graph[i].insert(j);
-    if (type == 2) {
-        graph[j].insert(i);
-    } 
+
+vector<vector<int>> build_matrix(int n, int value = 0) {
+    vector<vector<int>> matrix(n, vector<int>(n, value));
+    return matrix;
 }
 
-void DFS_visited(int start, vector<bool>& visited, vector<set<int>>& graph) {
-    stack<int> stack;
-    stack.push(start);
-    while (!stack.empty()) {
-        int u = stack.top();
-        stack.pop();
-        if (!visited[u]) {
-            visited[u] = true;
-            for (auto v : graph[u]) {
-                if (!visited[v]) {
-                    stack.push(v);
-                }
-            }
+void add_edge(int i, int j, int type, vector<vector<int>>& graph) {
+    graph[i][j] = 1;
+    if (type == 2) {
+        graph[j][i] = 1;
+    }
+}
+
+void DFS_visited(int u, vector<bool>& visited, vector<vector<int>>& graph) {
+    visited[u] = true;
+    for (int v = 0; v < graph.size(); ++v) {
+        if (graph[u][v] == 1 && !visited[v]) {
+            DFS_visited(v, visited, graph);
         }
     }
 }
 
-int DFS(vector<set<int>>& graph) {
-    for (int start = 1; start < graph.size(); ++start) {
+int DFS(vector<vector<int>>& graph) {
+    for (int start = 0; start < graph.size(); ++start) {
         vector<bool> visited(graph.size(), false);
         DFS_visited(start, visited, graph);
-        if (std::any_of(visited.begin()+1, visited.end(), [](bool v){ return !v; })) {
+        
+        bool found = false;
+        for (bool v : visited) {
+            if (!v) {
+                found = true;
+                break;
+            }
+        }
+        if (found) {
             return 0;
         }
     }
@@ -43,11 +46,11 @@ int main() {
     int vertices, edges;
     while (cin >> vertices >> edges) {
         if (edges == 0 || vertices == 0) break;
-        vector<set<int>> graph(vertices+1);
+        auto graph = build_matrix(vertices);
         for (int i = 0; i < edges; ++i) {
             int source, target, type;
             cin >> source >> target >> type;
-            add_edge(source, target, type, graph);
+            add_edge(source-1, target-1, type, graph);
         }
         cout << DFS(graph) << endl;
     }
