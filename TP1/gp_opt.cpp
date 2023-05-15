@@ -1,11 +1,13 @@
 #include <iostream>
 #include <vector>
 #include <stack>
+#include <set>
 
 using namespace std;
 
 long long DFS_MOD(int n_cities, int c_libs, int c_roads, vector<vector<int>>& graph) {
     long long lib_counter = 0;
+    set<pair<int, int>> road_counter;
     vector<bool> visited(n_cities + 1, false);
     for (int city = 1; city <= n_cities; ++city) {
         if (!visited[city]) {
@@ -20,14 +22,18 @@ long long DFS_MOD(int n_cities, int c_libs, int c_roads, vector<vector<int>>& gr
                     for (int neighbor : graph[current_city]) {
                         if (!visited[neighbor]) {
                             stack.push(neighbor);
+                            if (current_city < neighbor) {
+                                road_counter.insert({current_city, neighbor});
+                            } 
                         }
                     }
                 }
             }
         }
     }
-    return lib_counter * c_libs + ((long long) visited.size() - 1) * c_roads;
+    return lib_counter * c_libs + road_counter.size() * c_roads;
 }
+
 
 long long run_president(int n_cities, int n_roads, int c_libs, int c_roads) {
     if (n_roads == 0) {
