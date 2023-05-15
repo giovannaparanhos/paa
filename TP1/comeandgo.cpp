@@ -4,7 +4,6 @@
 #include <stack>
 #include <algorithm> 
 using namespace std;
-
 void add_edge(int i, int j, int type, vector<set<int>>& graph) {
     graph[i].insert(j);
     if (type == 2) {
