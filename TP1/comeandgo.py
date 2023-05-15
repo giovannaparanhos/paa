@@ -28,12 +28,12 @@ def add_edge(i, j, type, graph):
 
 while True:
     vertices, edges = map(int, input().split())
-    if edges == 0: break
+    if edges == 0 or vertices ==0: break
     graph = {vertex: set() for vertex in range(1, vertices+1)}
     for i in range(edges):
         source, target, type = map(int, input().split()) 
         add_edge(source, target, type, graph)
         
-        if i+1 == edges:
-            print(DFS(graph))
+        
+    print(DFS(graph))
         
