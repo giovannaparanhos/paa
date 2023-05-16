@@ -1,60 +1,84 @@
-import heapq
+from heapq import heappush, heappop
 
-def add_edge(i, j, weight, graph):
-    '''
-    Add edge to matrix'''
-    
-    graph[i][j] = weight
-    graph[j][i] = weight
-    
-    return graph
 
-def dijkstra(graph, source):
-    distances = {node: float('inf') for node in graph}
-    distances[source] = 0
-    queue = [(0, source)]
-    
+def add_edge(u, v, cap, cost, graph):
+    graph[u].append([v, len(graph[v]), cap, cost])
+    graph[v].append([u, len(graph[u])-1, 0, -cost])
+
+def dijkstra(graph, queue, dist, e_prev, v_prev, h):
     while queue:
-        current_distance, current_node = heapq.heappop(queue)
-        
-        if distances[current_node] < current_distance:
+        c, v = heappop(queue)
+        if dist[v] < c:
             continue
-            
-        for adjacent, weight in graph[current_node].items():
-            distance = current_distance + weight
-            
-            if distance < distances[adjacent]:
-                distances[adjacent] = distance
-                heapq.heappush(queue, (distance, adjacent))
-    return distances
-                
+        for i in range(len(graph[v])):
+            e = graph[v][i]
+            if e[2] > 0 and dist[e[0]] > dist[v] + e[3] + h[v] - h[e[0]]:
+                dist[e[0]] = dist[v] + e[3] + h[v] - h[e[0]]
+                v_prev[e[0]] = v
+                e_prev[e[0]] = i
+                heappush(queue, (dist[e[0]], e[0]))
+    return dist
 
+def min_cost_flow(s, t, f, graph):
+    res = 0
+    h = [0]*cities
+    v_prev = [0]*cities
+    e_prev = [0]*cities
 
-case = 1
+    while f:
+        dist = [float('inf')]*cities
+        dist[s] = 0
+        queue = [(0, s)]
+
+        dijkstra(graph, queue, dist, e_prev, v_prev, h)
+
+        if dist[t] == float('inf'):
+            return -1
+
+        for v in range(cities):
+            h[v] += dist[v]
+
+        d = f
+        v = t
+        while v != s:
+            d = min(d, graph[v_prev[v]][e_prev[v]][2])
+            v = v_prev[v]
+
+        f -= d
+        res += d * h[t]
+        v = t
+        while v != s:
+            graph[v_prev[v]][e_prev[v]][2] -= d
+            graph[v][graph[v_prev[v]][e_prev[v]][1]][2] += d
+            v = v_prev[v]
+
+    return res
+
+test_case = 1
 while True:
     try:
-        vertices, routes = map(int, input().split())
-        graph = {vertex: {} for vertex in range(1, vertices+1)}
-        for i in range(routes):
-            source, target, weight = map(int, input().split()) 
-            add_edge(source, target, weight, graph)
-            
+        cities, routes = map(int, input().split())
+        
+        graph = [[] for _ in range(cities)]
+        for _ in range(routes):
+            source, target, cost= map(int, input().split())
+            add_edge(source-1, target-1, 1, cost, graph)
+            add_edge(target-1, source-1, 1, cost, graph)
+
         friends, seats = map(int, input().split())
-        if friends > seats*routes:
-            print(f"Instancia {case}")
-            print("impossivel\n")
-            case += 1
-            continue
+        for i in range(cities):
+            for j in range(len(graph[i])):
+                if graph[i][j][2] > 0:
+                    graph[i][j][2] = seats
 
-        price = dijkstra(graph,1)
-
-        if price[vertices] == float('inf'):
-                print(f"Instancia {case}")
-                print("impossivel\n")
+        cost = min_cost_flow(0, cities-1, friends, graph)
+        print(f'Instancia {test_case}')
+        if cost == -1:
+            print('impossivel')
         else:
-            print(f"Instancia {case}")
-            print(price[vertices]*friends, "\n")     
-        case += 1
+            print(cost)
+        print()
 
+        test_case += 1
     except EOFError:
         break
